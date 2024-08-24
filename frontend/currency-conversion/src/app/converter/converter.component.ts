@@ -8,21 +8,32 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { LoaderComponent } from '../global/loader/loader.component';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-converter',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LoaderComponent],
   templateUrl: './converter.component.html',
   styleUrl: './converter.component.scss',
 })
-export class ConverterComponent {
+export class ConverterComponent implements AfterViewInit {
+  @ViewChild('mainLoader') mainLoader?: LoaderComponent;
+  @ViewChild('resultLoader') resultLoader?: LoaderComponent;
+
   public supportedCurrencies?: Array<CurrencyInfo>;
   public result: any;
-  constructor(private converterRepository: ConverterRepository) {
-    converterRepository.getSupportedCurrencies().subscribe((res) => {
-      this.supportedCurrencies = res;
-    });
+  constructor(private converterRepository: ConverterRepository) {}
+
+  ngAfterViewInit(): void {
+    this.mainLoader?.trigger(
+      this.converterRepository.getSupportedCurrencies().pipe(
+        tap((res) => {
+          this.supportedCurrencies = res;
+        })
+      )
+    );
   }
 
   convert(
@@ -34,11 +45,13 @@ export class ConverterComponent {
     if (!form.reportValidity() || !from || !to) {
       return;
     }
-    this.converterRepository
-      .convert(from.value, to.value, amount.value)
-      .subscribe((result) => {
-        this.result = result;
-      });
+    this.resultLoader?.trigger(
+      this.converterRepository.convert(from.value, to.value, amount.value).pipe(
+        tap((result) => {
+          this.result = result;
+        })
+      )
+    );
   }
 
   getResult(result: number, round: any): string {

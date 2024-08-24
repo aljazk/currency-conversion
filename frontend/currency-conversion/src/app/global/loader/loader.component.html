@@ -1,0 +1,3 @@
+<span *ngIf="Loading || NotStarted"><div class="lds-dual-ring"></div></span>
+<ng-content *ngIf="Success"></ng-content>
+<span *ngIf="Error" class="error">Error</span>

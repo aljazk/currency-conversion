@@ -1,25 +1,41 @@
 import { Router } from 'express';
-import { ConversionController } from './conversion.controller';
-import { DemoConversionRepository } from './demo-rates/demo-conversion.repository';
-import { ConversionService } from './conversion.service';
 import { logger } from '../logger';
+import { ConversionRepositorySelector } from './conversion-repository-selector';
+import { ConversionController } from './conversion.controller';
+import { ConversionService } from './conversion.service';
+import { ConversionsHistoryService } from './history/conversions-history.service';
+import { DocumentDBClient } from '../mongodb';
 
-const router = Router();
+export class ConversionRoutes {
+  constructor() {}
 
-const conversionRepository = new DemoConversionRepository();
-const conversionController = new ConversionController(
-  conversionRepository,
-  new ConversionService(conversionRepository, logger),
-  logger
-);
+  getRouter(conversionRatesSource?: string) {
+    const router = Router();
 
-router.get(
-  '/convert',
-  conversionController.convertCurrency.bind(conversionController)
-);
-router.get(
-  '/supported-currencies',
-  conversionController.supportedCurrencies.bind(conversionController)
-);
+    const conversionRepository = new ConversionRepositorySelector(
+      logger
+    ).getRepository(conversionRatesSource);
 
-export { router as conversionRoutes };
+    const conversionController = new ConversionController(
+      conversionRepository,
+      new ConversionService(
+        conversionRepository,
+        new ConversionsHistoryService(
+          new DocumentDBClient(logger, process.env.DATABASE_URI)
+        ),
+        logger
+      ),
+      logger
+    );
+
+    router.get(
+      '/convert',
+      conversionController.convertCurrency.bind(conversionController)
+    );
+    router.get(
+      '/supported-currencies',
+      conversionController.supportedCurrencies.bind(conversionController)
+    );
+    return router;
+  }
+}

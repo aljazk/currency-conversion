@@ -13,10 +13,5 @@ import { ConverterComponent } from './converter/converter.component';
 })
 export class AppComponent {
   public msg?: Array<any>;
-  constructor(ConverterRepository: ConverterRepository) {
-    ConverterRepository.getSupportedCurrencies().subscribe(
-      (res) => (this.msg = Object.values(res))
-    );
-  }
-  title = 'CurrencyConversion';
+  title = 'Currency conversion';
 }

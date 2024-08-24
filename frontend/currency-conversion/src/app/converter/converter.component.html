@@ -1,27 +1,48 @@
-<form #form>
-  <label for="cars">Convert</label>
-  <input #amount name="amount" id="amount" required type="number" step="0.01" />
-  <select name="from" id="from" #from value="EUR">
-    <ng-container *ngFor="let object of supportedCurrencies">
-      <option [value]="object.key" [selected]="object.key === 'EUR'">
-        {{ object.key }}: {{ object.value }}
-      </option>
-    </ng-container>
-  </select>
-  <label for="to">to:</label>
-  <select name="to" id="to" #to>
-    <ng-container *ngFor="let object of supportedCurrencies">
-      <option [value]="object.key" [selected]="object.key === 'USD'">
-        {{ object.key }}: {{ object.value }}
-      </option>
-    </ng-container>
-  </select>
-</form>
-<input type="checkbox" id="round" name="round" #round checked />
-<label for="round">Round result to two decimals</label>
+<div class="main">
+  <app-loader #mainLoader>
+    <form #form>
+      <label for="cars">Convert</label>
+      <input
+        #amount
+        name="amount"
+        id="amount"
+        required
+        type="number"
+        step="0.01"
+      />
+      <br />
+      <select name="from" id="from" #from value="EUR">
+        <ng-container *ngFor="let object of supportedCurrencies">
+          <option [value]="object.key" [selected]="object.key === 'EUR'">
+            {{ object.key }}: {{ object.value }}
+          </option>
+        </ng-container>
+      </select>
+      <label for="to">to</label>
+      <select name="to" id="to" #to>
+        <ng-container *ngFor="let object of supportedCurrencies">
+          <option [value]="object.key" [selected]="object.key === 'USD'">
+            {{ object.key }}: {{ object.value }}
+          </option>
+        </ng-container>
+      </select>
+    </form>
+    <div class="submitSection">
+      <input type="checkbox" id="round" name="round" #round checked />
+      <label for="round">Round result to two decimals</label>
 
-<button (click)="convert(form, from, to, amount)">Convert</button>
-<div *ngIf="result">
-  <p>Result: {{ getResult(result.result, round.checked) }} {{ result.to }}</p>
-  <p>Conversion rate: {{ result.conversionRate }}</p>
+      <button (click)="convert(form, from, to, amount)">Convert</button>
+    </div>
+    <div class="resultSection">
+      <app-loader #resultLoader>
+        <ng-container *ngIf="result">
+          <p>
+            Result: {{ getResult(result.result, round.checked) }}
+            {{ result.to }}
+          </p>
+          <p>Conversion rate: {{ result.conversionRate }}</p>
+        </ng-container>
+      </app-loader>
+    </div>
+  </app-loader>
 </div>

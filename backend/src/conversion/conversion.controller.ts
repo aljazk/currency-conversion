@@ -1,10 +1,8 @@
+import { validate } from 'class-validator';
 import { NextFunction, Request, Response } from 'express';
 import { ILogger } from '../logger.interface';
 import { IConversionRepository } from './conversion-repository.interface';
 import { ConversionRequestDTO } from './conversion-request-DTO';
-import { validate, ValidationError } from 'class-validator';
-import { ConversionReponseDTO } from './conversion-response.DTO';
-import { CurrencyValidatonError } from './currency-validaton.error';
 import { ConversionService } from './conversion.service';
 
 export class ConversionController {
