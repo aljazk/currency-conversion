@@ -4,9 +4,9 @@ import { ILogger } from './logger.interface';
 export class DocumentDBClient {
   constructor(private logger: ILogger, private readonly uri?: string) {}
 
-  async connect(
-    operation: (collection: Collection<Document>) => Promise<void>
-  ): Promise<void> {
+  async connect<T>(
+    operation: (collection: Collection<Document>) => Promise<T>
+  ): Promise<T | undefined> {
     if (!this.uri) {
       this.logger.log('DATABASE_URI not set, can not connect to database.');
       return;
@@ -20,12 +20,9 @@ export class DocumentDBClient {
       process.env.DATABSE_COLLECTION_NAME ?? 'conversion-history'
     );
 
-    await operation(col);
-    // Insert a single document
-    // await col.insertOne({ hello: 'Amazon DocumentDB' });
+    const result = await operation(col);
 
-    // // Find the document that was previously written
-    // const result = await col.findOne({ hello: 'Amazon DocumentDB' });
     await client.close();
+    return result;
   }
 }

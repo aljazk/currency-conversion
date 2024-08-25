@@ -16,15 +16,18 @@ export class ConversionRoutes {
       logger
     ).getRepository(conversionRatesSource);
 
+    const conversionsHistoryService = new ConversionsHistoryService(
+      new DocumentDBClient(logger, process.env.DATABASE_URI)
+    );
+
     const conversionController = new ConversionController(
       conversionRepository,
       new ConversionService(
         conversionRepository,
-        new ConversionsHistoryService(
-          new DocumentDBClient(logger, process.env.DATABASE_URI)
-        ),
+        conversionsHistoryService,
         logger
       ),
+      conversionsHistoryService,
       logger
     );
 
@@ -35,6 +38,10 @@ export class ConversionRoutes {
     router.get(
       '/supported-currencies',
       conversionController.supportedCurrencies.bind(conversionController)
+    );
+    router.get(
+      '/conversions-history',
+      conversionController.getConversionsHistory.bind(conversionController)
     );
     return router;
   }

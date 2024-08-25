@@ -4,15 +4,19 @@ services:
     image: currency-conversion-backend:latest
     ports:
       - '3000:3000'
+    environment:
+      DATABASE_URI: mongodb://root:password@mongo:27017/
   web:
     image: currency-conversion-frontend:latest
     ports:
       - '80:80'
     depends_on:
       - backend
-  # db:
-  #   image: postgres:latest
-  #   environment:
-  #     POSTGRES_PASSWORD: mysecretpassword
-  #   volumes:
-  #     - db_data:/var/lib/postgresql/data
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password

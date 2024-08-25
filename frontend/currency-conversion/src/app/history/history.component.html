@@ -1,0 +1,27 @@
+<div class="main">
+  <div class="convertButtonSection">
+    <a [routerLink]="['/']">Back to convert</a>
+    <button (click)="reload()">&#x21bb;</button>
+  </div>
+
+  <app-loader>
+    <table>
+      <tr>
+        <th>Calculation date</th>
+        <th>From</th>
+        <th>To</th>
+        <th>Amount</th>
+        <th>Result</th>
+        <th>Conversion rate</th>
+      </tr>
+      <tr *ngFor="let item of result">
+        <td>{{ formattedDate(item.date) }}</td>
+        <td>{{ item.from }}</td>
+        <td>{{ item.to }}</td>
+        <td>{{ item.amount }}</td>
+        <td>{{ round(item.result) }}</td>
+        <td>{{ item.conversionRate }}</td>
+      </tr>
+    </table>
+  </app-loader>
+</div>

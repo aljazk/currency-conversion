@@ -14,7 +14,14 @@ export class ConversionsHistoryService {
       await collection.insertOne(item);
     });
   }
-  public getConversionsHistory(): Promise<Array<ConversionDatabaseItem>> {
-    return Promise.resolve([]);
+  public async getConversionsHistory(): Promise<Array<ConversionDatabaseItem>> {
+    const result = await this.database.connect<Array<ConversionDatabaseItem>>(
+      async (collection: Collection<Document>) => {
+        return (await collection
+          .find()
+          .toArray()) as unknown as ConversionDatabaseItem[];
+      }
+    );
+    return result ?? new Array<ConversionDatabaseItem>();
   }
 }

@@ -1,20 +1,18 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { ReactiveFormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { tap } from 'rxjs';
+import { LoaderComponent } from '../global/loader/loader.component';
 import { ConverterRepository } from './converter.repository';
 import { CurrencyInfo } from './currency-info.model';
-import { CommonModule } from '@angular/common';
-import {
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { LoaderComponent } from '../global/loader/loader.component';
-import { tap } from 'rxjs';
+import { ConversionResultModel } from './conversion-result.model';
+import { Status } from '../global/loader/status.enum';
 
 @Component({
   selector: 'app-converter',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LoaderComponent],
+  imports: [CommonModule, ReactiveFormsModule, LoaderComponent, RouterModule],
   templateUrl: './converter.component.html',
   styleUrl: './converter.component.scss',
 })
@@ -23,17 +21,20 @@ export class ConverterComponent implements AfterViewInit {
   @ViewChild('resultLoader') resultLoader?: LoaderComponent;
 
   public supportedCurrencies?: Array<CurrencyInfo>;
-  public result: any;
+  public result?: ConversionResultModel;
   constructor(private converterRepository: ConverterRepository) {}
 
   ngAfterViewInit(): void {
-    this.mainLoader?.trigger(
-      this.converterRepository.getSupportedCurrencies().pipe(
-        tap((res) => {
-          this.supportedCurrencies = res;
-        })
-      )
+    const obs = this.converterRepository.getSupportedCurrencies().pipe(
+      tap((res) => {
+        this.supportedCurrencies = res;
+      })
     );
+    console.log(this.converterRepository, obs);
+    this.mainLoader?.trigger(obs);
+    if (this.resultLoader) {
+      this.resultLoader.status = Status.Success;
+    }
   }
 
   convert(

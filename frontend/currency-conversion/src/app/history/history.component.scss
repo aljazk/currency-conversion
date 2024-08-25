@@ -1,0 +1,39 @@
+div.main {
+  display: flex;
+  flex-direction: column;
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 1rem;
+  & > * {
+    margin-top: 1rem;
+  }
+  table {
+    margin-top: 1rem;
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+    background-color: white;
+    border-radius: 4px;
+    border-style: hidden; /* hide standard table (collapsed) border */
+    box-shadow: 0 0 0 1px #dddddd; /* this draws the table border  */
+  }
+
+  td,
+  th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 1rem;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f5f5f5;
+  }
+}
+
+.convertButtonSection {
+  display: flex;
+  justify-content: space-between;
+  & > * {
+    width: 30%;
+  }
+}

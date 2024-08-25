@@ -20,7 +20,7 @@ export class LoaderComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.trigger(this.observable);
+    // this.trigger(this.observable);
   }
 
   private _subscription?: Subscription;
@@ -41,12 +41,13 @@ export class LoaderComponent implements OnInit {
       console.warn('Cannot trigger this action, because its already running');
       return;
     }
+    this.status = Status.Loading;
+    console.log(observable);
     if (!observable) {
       this.status = Status.Success;
       return;
     }
 
-    this.status = Status.Loading;
     this._subscription = observable
       .pipe(
         take(1),
