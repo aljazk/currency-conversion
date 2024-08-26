@@ -1,12 +1,9 @@
-import { NextFunction, Request, Response } from 'express';
-import { IConversionRepository } from './conversion-repository.interface';
-import { ConversionController } from './conversion.controller';
-import { CurrencyValidatonError } from './currency-validaton.error';
-import { ConversionService } from './conversion.service';
-import { ConversionRequestDTO } from './conversion-request-DTO';
-import { ConversionReponseDTO } from './conversion-response.DTO';
-import { CurrencyInfo } from './currency-info.model';
 import * as classValidator from 'class-validator';
+import { IConversionRepository } from './conversion-repository.interface';
+import { ConversionRequestDTO } from './conversion-request-DTO';
+import { ConversionController } from './conversion.controller';
+import { ConversionService } from './conversion.service';
+import { CurrencyInfo } from './currency-info.model';
 import { ConversionsHistoryService } from './history/conversions-history.service';
 
 class ConversionRepositoryMock implements IConversionRepository {
@@ -31,7 +28,7 @@ class MockConversionService extends ConversionService {
       return Promise.resolve(
         Object.assign(
           {
-            result: dto.amount * conversionRate,
+            result: Number(dto.amount) * conversionRate,
             conversionRate: conversionRate,
           },
           dto
@@ -50,9 +47,6 @@ class ConversionsHistoryServiceMock extends ConversionsHistoryService {
 }
 
 describe('ConversionController', () => {
-  let mockReq: Request;
-  let mockRes: Response;
-  let mockNext: NextFunction;
   let mockConversionService: MockConversionService;
   let mockConversionRepository: ConversionRepositoryMock;
   let mockConversionsHistoryService: ConversionsHistoryService;
@@ -60,13 +54,6 @@ describe('ConversionController', () => {
   let convertCurrency: ConversionController;
 
   beforeEach(() => {
-    mockReq = { query: {} } as Request;
-    mockRes = {
-      status: jest.fn(() => mockRes),
-      json: jest.fn(() => mockRes),
-      send: jest.fn(() => mockRes),
-    } as unknown as Response;
-    mockNext = jest.fn();
     mockConversionService = new MockConversionService();
     mockConversionsHistoryService = new ConversionsHistoryServiceMock();
     mockConversionRepository = new ConversionRepositoryMock();
@@ -74,14 +61,16 @@ describe('ConversionController', () => {
     convertCurrency = new ConversionController(
       mockConversionRepository,
       mockConversionService,
-      mockConversionsHistoryService,
-      console
+      mockConversionsHistoryService
     );
   });
 
   it('Should validate DTO', async () => {
-    mockReq.query = { from: 'EUR', to: 'USD', amount: '10' };
-    await convertCurrency.convertCurrency(mockReq, mockRes, mockNext);
+    await convertCurrency.convertCurrency({
+      from: 'EUR',
+      to: 'USD',
+      amount: '10' as any,
+    });
     expect(validateSpy).toHaveBeenCalledWith({
       from: 'EUR',
       to: 'USD',
@@ -89,33 +78,51 @@ describe('ConversionController', () => {
     });
   });
 
-  it('Should pass error to next if query param "from" is missing', async () => {
-    mockReq.query = { to: 'EUR', amount: '10' };
-    await convertCurrency.convertCurrency(mockReq, mockRes, mockNext);
-    expect(mockNext).toHaveBeenCalledTimes(1);
+  it('Should throw error if query param "from" is missing', async () => {
+    try {
+      await convertCurrency.convertCurrency({ to: 'EUR', amount: '10' } as any);
+    } catch (e) {
+      expect(e).toBeTruthy();
+    }
   });
 
-  it('Should pass error to next if query param "to" is missing', async () => {
-    mockReq.query = { from: 'EUR', amount: '10' };
-    await convertCurrency.convertCurrency(mockReq, mockRes, mockNext);
-    expect(mockNext).toHaveBeenCalledTimes(1);
+  it('Should throw error if query param "to" is missing', async () => {
+    try {
+      await convertCurrency.convertCurrency({
+        from: 'EUR',
+        amount: '10',
+      } as any);
+    } catch (e) {
+      expect(e).toBeTruthy();
+    }
   });
 
-  it('Should pass error to next if query param "amount" is missing', async () => {
-    mockReq.query = { from: 'EUR', to: 'USD' };
-    await convertCurrency.convertCurrency(mockReq, mockRes, mockNext);
-    expect(mockNext).toHaveBeenCalledTimes(1);
+  it('Should throw error if query param "amount" is missing', async () => {
+    try {
+      await convertCurrency.convertCurrency({ from: 'EUR', to: 'USD' } as any);
+    } catch (e) {
+      expect(e).toBeTruthy();
+    }
   });
 
-  it('Should pass error to next if query param "amount" is not a number', async () => {
-    mockReq.query = { from: 'EUR', to: 'USD', amount: 'abc' };
-    await convertCurrency.convertCurrency(mockReq, mockRes, mockNext);
-    expect(mockNext).toHaveBeenCalledTimes(1);
+  it('Should throw error if query param "amount" is not a number', async () => {
+    try {
+      await convertCurrency.convertCurrency({
+        from: 'EUR',
+        to: 'USD',
+        amount: 'abc' as any,
+      } as any);
+    } catch (e) {
+      expect(e).toBeTruthy();
+    }
   });
 
   it('Should call convert with correct DTO', async () => {
-    mockReq.query = { from: 'EUR', to: 'USD', amount: '12' };
-    await convertCurrency.convertCurrency(mockReq, mockRes, mockNext);
+    await convertCurrency.convertCurrency({
+      from: 'EUR',
+      to: 'USD',
+      amount: '12' as any,
+    });
     expect(mockConversionService.convert).toHaveBeenCalledWith({
       from: 'EUR',
       to: 'USD',
@@ -123,41 +130,41 @@ describe('ConversionController', () => {
     });
   });
 
-  it('Should send whatever convert method from ConversionService returns', async () => {
-    mockReq.query = { from: 'EUR', to: 'USD', amount: '12' };
+  it('Should return whatever convert method from ConversionService returns', async () => {
     mockConversionService.convert = jest
       .fn()
       .mockReturnValue({ return: 'Test' });
-    await convertCurrency.convertCurrency(mockReq, mockRes, mockNext);
-    expect(mockRes.send).toHaveBeenCalledWith({
+    expect(
+      await convertCurrency.convertCurrency({
+        from: 'EUR',
+        to: 'USD',
+        amount: '12' as any,
+      })
+    ).toEqual({
       return: 'Test',
     });
   });
 
-  it('Support currencies should send whatever conversionRepository.getSupportedCurrencies returns', async () => {
-    mockReq.query = { from: 'EUR', to: 'USD', amount: '12' };
+  it('Support currencies should return whatever conversionRepository.getSupportedCurrencies returns', async () => {
     mockConversionRepository.getSupportedCurrencies = jest
       .fn()
       .mockReturnValue({ return: 'Test' });
-    await convertCurrency.supportedCurrencies(mockReq, mockRes, mockNext);
-    expect(mockRes.send).toHaveBeenCalledWith({
+    expect(await convertCurrency.supportedCurrencies()).toEqual({
       return: 'Test',
     });
   });
 
-  it('getConversionsHistory should send whatever ConversionsHistoryService.getConversionsHistory returns', async () => {
+  it('getConversionsHistory should return whatever ConversionsHistoryService.getConversionsHistory returns', async () => {
     mockConversionsHistoryService.getConversionsHistory = jest
       .fn()
       .mockResolvedValue([]);
-    await convertCurrency.getConversionsHistory(mockReq, mockRes, mockNext);
-    expect(mockRes.send).toHaveBeenCalledWith([]);
+    expect(await convertCurrency.getConversionsHistory()).toEqual([]);
   });
 
-  it('getConversionsHistory should send whatever ConversionsHistoryService.getConversionsHistory returns, another value', async () => {
+  it('getConversionsHistory should reutrn whatever ConversionsHistoryService.getConversionsHistory returns, another value', async () => {
     mockConversionsHistoryService.getConversionsHistory = jest
       .fn()
       .mockResolvedValue([1, 2, 3]);
-    await convertCurrency.getConversionsHistory(mockReq, mockRes, mockNext);
-    expect(mockRes.send).toHaveBeenCalledWith([1, 2, 3]);
+    expect(await convertCurrency.getConversionsHistory()).toEqual([1, 2, 3]);
   });
 });

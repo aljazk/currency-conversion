@@ -20,7 +20,7 @@ export class ConversionService {
       dto.to
     );
 
-    const converted = this.convertCurrency(dto.amount, conversionRate);
+    const converted = this.convertCurrency(Number(dto.amount), conversionRate);
     const result = this.prepareResponse(dto, converted, conversionRate);
     this.logger.log(
       `Converted ${result.amount} ${result.from} to ${result.result} ${result.to} using ${result.conversionRate} conversion rate`

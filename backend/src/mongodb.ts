@@ -13,8 +13,6 @@ export class DocumentDBClient {
     }
     const client = await MongoClient.connect(this.uri);
 
-    console.log('Connected to DocumentDB');
-
     const db = client.db(process.env.DATABSE_NAME ?? 'currency-conversion');
     const col = db.collection(
       process.env.DATABSE_COLLECTION_NAME ?? 'conversion-history'

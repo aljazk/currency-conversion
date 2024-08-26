@@ -15,14 +15,12 @@ export class ConverterRepository {
     to: string,
     amount: string
   ): Observable<ConversionResultModel> {
-    return this.httpClient.get<ConversionResultModel>(
+    return this.httpClient.post<ConversionResultModel>(
       'api/conversion/convert',
       {
-        params: {
-          from: from,
-          to: to,
-          amount: amount,
-        },
+        from: from,
+        to: to,
+        amount: amount,
       }
     );
   }

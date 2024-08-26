@@ -1,10 +1,4 @@
-import {
-  IsNumber,
-  IsNumberString,
-  IsString,
-  Length,
-  MinLength,
-} from 'class-validator';
+import { IsNumberString, IsString } from 'class-validator';
 
 export class ConversionRequestDTO {
   @IsString()
@@ -14,5 +8,5 @@ export class ConversionRequestDTO {
   to!: string;
 
   @IsNumberString()
-  amount!: number;
+  amount!: string;
 }

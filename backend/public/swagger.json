@@ -1,0 +1,193 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"ConversionReponseDTO": {
+				"properties": {
+					"from": {
+						"type": "string"
+					},
+					"to": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "string"
+					},
+					"result": {
+						"type": "number",
+						"format": "double"
+					},
+					"conversionRate": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"from",
+					"to",
+					"amount",
+					"result",
+					"conversionRate"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ConversionRequestDTO": {
+				"properties": {
+					"from": {
+						"type": "string"
+					},
+					"to": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"from",
+					"to",
+					"amount"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CurrencyInfo": {
+				"properties": {},
+				"type": "object",
+				"additionalProperties": {
+					"type": "string"
+				}
+			},
+			"ConversionDatabaseItem": {
+				"properties": {
+					"from": {
+						"type": "string"
+					},
+					"to": {
+						"type": "string"
+					},
+					"amount": {
+						"type": "string"
+					},
+					"result": {
+						"type": "number",
+						"format": "double"
+					},
+					"conversionRate": {
+						"type": "number",
+						"format": "double"
+					},
+					"date": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"from",
+					"to",
+					"amount",
+					"result",
+					"conversionRate",
+					"date"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "currency-conversion",
+		"version": "1.0.0",
+		"license": {
+			"name": "ISC"
+		},
+		"contact": {}
+	},
+	"paths": {
+		"/conversion/convert": {
+			"post": {
+				"operationId": "ConvertCurrency",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ConversionReponseDTO"
+								}
+							}
+						}
+					}
+				},
+				"description": "Converts amount from one currency to another.",
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ConversionRequestDTO"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/conversion/supported-currencies": {
+			"get": {
+				"operationId": "SupportedCurrencies",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CurrencyInfo"
+								}
+							}
+						}
+					}
+				},
+				"description": "Returns list of all supported currencies.",
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/conversion/conversions-history": {
+			"get": {
+				"operationId": "GetConversionsHistory",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/ConversionDatabaseItem"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"description": "Returns list of conversions that have been stored in database.",
+				"security": [],
+				"parameters": []
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "/"
+		}
+	]
+}

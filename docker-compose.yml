@@ -4,8 +4,12 @@ services:
     image: currency-conversion-backend:latest
     ports:
       - '3000:3000'
+    depends_on:
+      - mongo
     environment:
       DATABASE_URI: mongodb://root:password@mongo:27017/
+      # CONVERSION_RATES_SOURCE: exchange-rates-api
+      # API_KEY: <your_api_key>
   web:
     image: currency-conversion-frontend:latest
     ports:
@@ -20,3 +24,5 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - './data:/data/db'

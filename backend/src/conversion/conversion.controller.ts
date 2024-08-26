@@ -1,59 +1,53 @@
 import { validate } from 'class-validator';
-import { NextFunction, Request, Response } from 'express';
-import { ILogger } from '../logger.interface';
+import { Body, Get, Post, Queries, Route } from 'tsoa';
 import { IConversionRepository } from './conversion-repository.interface';
 import { ConversionRequestDTO } from './conversion-request-DTO';
+import { ConversionReponseDTO } from './conversion-response.DTO';
 import { ConversionService } from './conversion.service';
+import { CurrencyInfo } from './currency-info.model';
 import { ConversionsHistoryService } from './history/conversions-history.service';
 
+@Route('conversion')
 export class ConversionController {
   constructor(
     private conversionRepository: IConversionRepository,
     private conversionService: ConversionService,
-    private conversionsHistoryService: ConversionsHistoryService,
-    private logger: ILogger
+    private conversionsHistoryService: ConversionsHistoryService
   ) {}
+
+  /**
+   * Converts amount from one currency to another.
+   * @param conversionRequestDTO
+   * @returns
+   */
+  @Post('convert')
   public async convertCurrency(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      const dto = Object.assign(new ConversionRequestDTO(), req.query);
-      const errors = await validate(dto);
-      if (errors.length > 0) {
-        throw errors;
-      }
-      res.send(await this.conversionService.convert(dto));
-    } catch (e) {
-      this.logger.error(e as Error);
-      next(e);
+    @Body() conversionRequestDTO: ConversionRequestDTO
+  ): Promise<ConversionReponseDTO> {
+    const dto = Object.assign(new ConversionRequestDTO(), conversionRequestDTO);
+    console.log(dto);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw errors;
     }
+    return await this.conversionService.convert(dto);
   }
 
-  public async supportedCurrencies(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      res.send(await this.conversionRepository.getSupportedCurrencies());
-    } catch (e) {
-      this.logger.error(e as Error);
-      next(e);
-    }
+  /**
+   * Returns list of all supported currencies.
+   * @returns
+   */
+  @Get('supported-currencies')
+  public async supportedCurrencies(): Promise<CurrencyInfo> {
+    return await this.conversionRepository.getSupportedCurrencies();
   }
 
-  public async getConversionsHistory(
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) {
-    try {
-      res.send(await this.conversionsHistoryService.getConversionsHistory());
-    } catch (e) {
-      this.logger.error(e as Error);
-      next(e);
-    }
+  /**
+   * Returns list of conversions that have been stored in database.
+   * @returns
+   */
+  @Get('conversions-history')
+  public async getConversionsHistory() {
+    return await this.conversionsHistoryService.getConversionsHistory();
   }
 }

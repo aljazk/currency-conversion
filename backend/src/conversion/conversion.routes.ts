@@ -1,13 +1,28 @@
-import { Router } from 'express';
+import { NextFunction, Request, Response, Router } from 'express';
 import { logger } from '../logger';
 import { ConversionRepositorySelector } from './conversion-repository-selector';
 import { ConversionController } from './conversion.controller';
 import { ConversionService } from './conversion.service';
 import { ConversionsHistoryService } from './history/conversions-history.service';
 import { DocumentDBClient } from '../mongodb';
+import { ConversionRequestDTO } from './conversion-request-DTO';
 
 export class ConversionRoutes {
   constructor() {}
+
+  private async handleRequest(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+    callback: () => Promise<any>
+  ) {
+    try {
+      res.send(await callback());
+    } catch (e) {
+      logger.error(e as Error);
+      next(e);
+    }
+  }
 
   getRouter(conversionRatesSource?: string) {
     const router = Router();
@@ -27,21 +42,37 @@ export class ConversionRoutes {
         conversionsHistoryService,
         logger
       ),
-      conversionsHistoryService,
-      logger
+      conversionsHistoryService
+    );
+
+    router.post(
+      '/convert',
+      async (req: Request, res: Response, next: NextFunction) => {
+        this.handleRequest(req, res, next, () => {
+          console.log(req.body);
+          return conversionController.convertCurrency(
+            req.body as ConversionRequestDTO
+          );
+        });
+      }
     );
 
     router.get(
-      '/convert',
-      conversionController.convertCurrency.bind(conversionController)
-    );
-    router.get(
       '/supported-currencies',
-      conversionController.supportedCurrencies.bind(conversionController)
+      async (req: Request, res: Response, next: NextFunction) => {
+        this.handleRequest(req, res, next, () => {
+          return conversionController.supportedCurrencies();
+        });
+      }
     );
+
     router.get(
       '/conversions-history',
-      conversionController.getConversionsHistory.bind(conversionController)
+      async (req: Request, res: Response, next: NextFunction) => {
+        this.handleRequest(req, res, next, () => {
+          return conversionController.getConversionsHistory();
+        });
+      }
     );
     return router;
   }
